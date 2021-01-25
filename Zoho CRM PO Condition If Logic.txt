@@ -1,0 +1,374 @@
+getPOAgile = zoho.crm.getRecordById("Agile_Purchase_Orders",agilePoId);
+info getPOAgile;
+PO_Type = getPOAgile.get("Purchase_Order_Type");
+info PO_Type;
+if(PO_Type == null)
+{
+    return "You need to fill Purchase Order Type";
+}
+else
+{
+    // intialize status
+    getDeal = zoho.crm.getRecordById("Deals",getPOAgile.get("Deal_Name").get("id"));
+    if(getDeal.get("Sales_Grand_Total") != 0)
+    {
+        // execute sales
+        status = "sales";
+    }
+    else if(getDeal.get("Service_Grand_Total") != 0)
+    {
+        // execute service
+        status = "service";
+    }
+    else if(getDeal.get("Rental_Grand_Total") != 0)
+    {
+        // execute rental
+        status = "rental";
+    }
+    info status;
+    //
+    if(PO_Type == "Non FedEx International" && status == "sales")
+    {
+        resourceId = "3tpi1c7fec8e9b043430f8db83c6343afe33d";
+    }
+    else if(PO_Type == "Non FedEx International" && status == "service")
+    {
+        resourceId = "3tpi118a262e0828a4d6083ff2cc3844291b1";
+    }
+    else if(PO_Type == "Non FedEx International" && status == "rental")
+    {
+        resourceId = "3tpi17881c862ae814c3285e278921b0d9c74";
+    }
+    else if(PO_Type == "FedEx International" && status == "sales")
+    {
+        resourceId = "3tpi1d13504f028ca45fea15c331f52c0db9e";
+    }
+    else if(PO_Type == "FedEx International" && status == "service")
+    {
+        resourceId = "3tpi17f4fa5e0f99143dbae42b5ae08083fe1";
+    }
+    else if(PO_Type == "FedEx International" && status == "rental")
+    {
+        resourceId = "3tpi13961f867f1394bcca970eee426302ec7";
+    }
+    else if(PO_Type == "Local Broker" && status == "sales")
+    {
+        resourceId = "3tpi17b2ecffc59b64026ae512ea35904a96a";
+    }
+    else if(PO_Type == "Local Broker" && status == "service")
+    {
+        resourceId = "3tpi14f1c276515f44b6799eec6168438f6cd";
+    }
+    else if(PO_Type == "Local Broker" && status == "rental")
+    {
+        resourceId = "3tpi17400970c0ff24965b7839dd6ccfce042";
+    }
+    agilePOName = getPOAgile.get("Name");
+    info "agilePOName = " + agilePOName;
+    vendorName = getPOAgile.get("Vendor").get("name");
+    info "vendorName = " + vendorName;
+    vendorId = getPOAgile.get("Vendor").get("id");
+    info "vendorId = " + vendorId;
+    contactId = getPOAgile.get("Contact_Name").get("id");
+    info "contactId = " + contactId;
+    oriDueDate = getPOAgile.get("Due_Date");
+    info "oriDueDate = " + oriDueDate;
+    info "oriDueDate = " + oriDueDate;
+    dueDate = getPOAgile.get("Due_Date").toString("dd MMM yyyy");
+    info "dueDate = " + dueDate;
+    poDate = zoho.currentdate;
+    getContact = zoho.crm.getRecordById("Contacts",contactId);
+    firstName = getContact.get("First_Name");
+    accountName = getContact.get("Account_Name").get("name");
+    getAccount = zoho.crm.getRecordById("Accounts",getContact.get("Account_Name").get("id"));
+    info "getAccount = " + getAccount;
+    billingStreet = getAccount.get("Billing_Street");
+    billingCity = getAccount.get("Billing_City");
+    billingCountry = getAccount.get("Billing_Country");
+    billingCode = getAccount.get("Billing_Code");
+    billingState = getAccount.get("Billing_State");
+    shippingStreet = getAccount.get("Shipping_Street");
+    shippingCity = getAccount.get("Shipping_City");
+    shippingCode = getAccount.get("Shipping_Code");
+    shippingState = getAccount.get("Shipping_State");
+    shippingCountry = getAccount.get("Shipping_Country");
+    email = getContact.get("Email");
+    issueDate = zoho.currentdate;
+    dealId = getPOAgile.get("Deal_Name").get("id");
+    getDeal = zoho.crm.getRecordById("Deals",dealId);
+    PO_Number = getDeal.get("PO_Number");
+    getQuote = zoho.crm.getRelatedRecords("Quotes","Deals",dealId,1,200,{"sort_by":"Created_Time","sort_order":"dsc"});
+    if(getQuote.get(0).get("Quote_Number") == null)
+    {
+        QuoteNumber = "";
+    }
+    else
+    {
+        QuoteNumber = getQuote.get(0).get("Quote_Number");
+    }
+    currencyIs = getPOAgile.get("Currency");
+    if(currencyIs == "AUD")
+    {
+        currencyIs = "$AUD";
+    }
+    else if(currencyIs == "USD")
+    {
+        currencyIs = "$USD";
+    }
+    info QuoteNumber;
+    if(status == "sales")
+    {
+        // sales
+        salesQuotes = getPOAgile.get("Sales_Purchase_Order");
+        info "sales quotes = " + salesQuotes;
+        subTotal = getPOAgile.get("Sales_Sub_Total");
+        gst = getPOAgile.get("Sales_GST");
+        grandTotal = getPOAgile.get("Sales_Grand_Total");
+        // end of sales
+        // salesProduct
+        salesList = List();
+        salesListRec = List();
+        for each  salesQuote in salesQuotes
+        {
+            salesMap = Map();
+            salesMap.put("Sales_Purchase_Order.Mfr",salesQuote.get("Mfr"));
+            salesMap.put("Sales_Purchase_Order.Model",salesQuote.get("Model").get("name"));
+            salesMap.put("Sales_Purchase_Order.Description",salesQuote.get("Description"));
+            salesMap.put("Sales_Purchase_Order.Quantity",salesQuote.get("Quantity"));
+            info "unit cost = " + salesQuote.get("Unit_Cost");
+            info "Extended Cost = " + salesQuote.get("Extended_Cost");
+            salesMap.put("Sales_Purchase_Order.Unit_Cost",currencyIs + " " + salesQuote.get("Unit_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            salesMap.put("Sales_Purchase_Order.Extended_Cost",currencyIs + " " + salesQuote.get("Extended_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            info salesMap;
+            //  
+            salesMapRec = Map();
+            salesMapRec.put("product",salesQuote.get("Model").get("id"));
+            salesMapRec.put("name",salesQuote.get("Model").get("name"));
+            salesMapRec.put("description",salesQuote.get("Description"));
+            salesMapRec.put("tax",0);
+            salesMapRec.put("discount",0);
+            salesMapRec.put("quantity",salesQuote.get("Quantity"));
+            //  conditional if unit cost is null or if unit cost is different
+            unitCost = zoho.crm.getRecordById("Product",salesQuote.get("Model").get("id")).get("Unit_Cost");
+            if(unitCost == null || unitCost != salesQuote.get("Unit_Cost") || zoho.crm.getRecordById("Product",salesQuote.get("Model").get("id")).get("Unit_Price") != salesQuote.get("Unit_Cost"))
+            {
+                //      update unit cost
+                info "update record" + zoho.crm.updateRecord("Products",salesQuote.get("Model").get("id"),{"Unit_Cost":salesQuote.get("Unit_Cost")});
+                //      temp unit price
+                //      update unit price
+                tempPrice = zoho.crm.getRecordById("Products",salesQuote.get("Model").get("id")).get("Unit_Price");
+                info "update record" + zoho.crm.updateRecord("Products",salesQuote.get("Model").get("id"),{"Unit_Price":salesQuote.get("Unit_Cost")});
+            }
+            salesMapRec.put("unit_Price",salesQuote.get("Unit_Cost"));
+            salesMapRec.put("amount",salesQuote.get("Extended_Cost"));
+            info salesMapRec;
+            salesList.add(salesMap);
+            salesListRec.add(salesMapRec);
+        }
+        info "salesList = " + salesList;
+        // end of sales product
+    }
+    else if(status == "service")
+    {
+        // service
+        serviceQuotes = getPOAgile.get("Service_Purchase_Order");
+        info "service quotes = " + serviceQuotes;
+        subTotal = getPOAgile.get("Service_Sub_Total");
+        gst = getPOAgile.get("Service_GST");
+        grandTotal = getPOAgile.get("Service_Grand_Total");
+        // end of service
+        // serviceProduct
+        serviceList = List();
+        serviceListRec = List();
+        for each  serviceQuote in serviceQuotes
+        {
+            serviceMap = Map();
+            serviceMap.put("Service_Purchase_Order.Mfr",serviceQuote.get("Mfr1"));
+            serviceMap.put("Service_Purchase_Order.Model",serviceQuote.get("Model").get("name"));
+            serviceMap.put("Service_Purchase_Order.Description",serviceQuote.get("Description1"));
+            serviceMap.put("Service_Purchase_Order.Quantity",serviceQuote.get("Quantity"));
+            serviceMap.put("Service_Purchase_Order.Unit_Cost",currencyIs + " " + serviceQuote.get("Unit_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            serviceMap.put("Service_Purchase_Order.Extended_Cost",currencyIs + " " + serviceQuote.get("Extended_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            info serviceMap;
+            //  
+            serviceMapRec = Map();
+            serviceMapRec.put("product",serviceQuote.get("Model").get("id"));
+            serviceMapRec.put("name",serviceQuote.get("Model").get("name"));
+            serviceMapRec.put("description",serviceQuote.get("Description1"));
+            serviceMapRec.put("tax",0);
+            serviceMapRec.put("discount",0);
+            serviceMapRec.put("quantity",serviceQuote.get("Quantity"));
+            //  conditional if unit cost is null or if unit cost is different
+            unitCost = zoho.crm.getRecordById("Product",serviceQuote.get("Model").get("id")).get("Unit_Cost");
+            if(unitCost == null || unitCost != serviceQuote.get("Unit_Cost") || zoho.crm.getRecordById("Product",serviceQuote.get("Model").get("id")).get("Unit_Price") != serviceQuote.get("Unit_Cost"))
+            {
+                //      update unit cost
+                info "update record" + zoho.crm.updateRecord("Products",serviceQuote.get("Model").get("id"),{"Unit_Cost":serviceQuote.get("Unit_Cost")});
+                //      temp unit price
+                //      update unit price
+                tempPrice = zoho.crm.getRecordById("Products",serviceQuote.get("Model").get("id")).get("Unit_Price");
+                info "update record" + zoho.crm.updateRecord("Products",serviceQuote.get("Model").get("id"),{"Unit_Price":serviceQuote.get("Unit_Cost")});
+            }
+            serviceMapRec.put("unit_Price",serviceQuote.get("Unit_Cost"));
+            serviceMapRec.put("amount",serviceQuote.get("Extended_Cost"));
+            info serviceMapRec;
+            serviceList.add(serviceMap);
+            serviceListRec.add(serviceMapRec);
+        }
+        info "serviceList = " + serviceList;
+        // end of service product
+    }
+    else if(status == "rental")
+    {
+        // rental
+        rentalQuotes = getPOAgile.get("Rental_Purchase_Order");
+        info "rental quotes = " + rentalQuotes;
+        subTotal = getPOAgile.get("Rental_Sub_Total");
+        gst = getPOAgile.get("Rental_GST");
+        grandTotal = getPOAgile.get("Rental_Grand_Total");
+        // rentalProduct
+        rentalList = List();
+        rentalListRec = List();
+        for each  rentalQuote in rentalQuotes
+        {
+            rentalMap = Map();
+            rentalMap.put("Rental_Purchase_Order.Mfr",rentalQuote.get("Mfr1"));
+            rentalMap.put("Rental_Purchase_Order.Model",rentalQuote.get("Model").get("name"));
+            rentalMap.put("Rental_Purchase_Order.Description",rentalQuote.get("Description1"));
+            rentalMap.put("Rental_Purchase_Order.Quantity",rentalQuote.get("Quantity"));
+            info "unit cost = " + rentalQuote.get("Unit_Cost");
+            info "Extended Cost = " + rentalQuote.get("Extended_Cost");
+            rentalMap.put("Sales_Purchase_Order.Unit_Cost",currencyIs + " " + rentalQuote.get("Unit_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            rentalMap.put("Sales_Purchase_Order.Extended_Cost",currencyIs + " " + rentalQuote.get("Extended_Cost").toString().replaceAll("(?<!\.\d)(?<=\d)(?=(?:\d\d\d)+\b)",","));
+            info rentalMap;
+            //  
+            rentalMapRec = Map();
+            rentalMapRec.put("product",rentalQuote.get("Model").get("id"));
+            rentalMapRec.put("name",rentalQuote.get("Model").get("name"));
+            rentalMapRec.put("description",rentalQuote.get("Description1"));
+            rentalMapRec.put("tax",0);
+            rentalMapRec.put("discount",0);
+            rentalMapRec.put("quantity",rentalQuote.get("Quantity"));
+            //  conditional if unit cost is null or if unit cost is different
+            unitCost = zoho.crm.getRecordById("Product",rentalQuote.get("Model").get("id")).get("Unit_Cost");
+            if(unitCost == null || unitCost != rentalQuote.get("Unit_Cost") || zoho.crm.getRecordById("Product",rentalQuote.get("Model").get("id")).get("Unit_Price") != rentalQuote.get("Unit_Cost"))
+            {
+                //      update unit cost
+                info "update record" + zoho.crm.updateRecord("Products",rentalQuote.get("Model").get("id"),{"Unit_Cost":rentalQuote.get("Unit_Cost")});
+                //      temp unit price
+                //      update unit price
+                tempPrice = zoho.crm.getRecordById("Products",rentalQuote.get("Model").get("id")).get("Unit_Price");
+                info "update record" + zoho.crm.updateRecord("Products",rentalQuote.get("Model").get("id"),{"Unit_Price":rentalQuote.get("Unit_Cost")});
+            }
+            rentalMapRec.put("unit_Price",rentalQuote.get("Unit_Cost"));
+            rentalMapRec.put("amount",rentalQuote.get("Extended_Cost"));
+            info rentalMapRec;
+            rentalList.add(rentalMap);
+            rentalListRec.add(rentalMapRec);
+        }
+        info "rental = " + rentalList;
+        // end of rental
+    }
+    info "subTotal = " + subTotal;
+    info "gst = " + gst;
+    info "grandTotal = " + grandTotal;
+    // service
+    // end of service
+    // rental
+    // end of rental
+    info "email = " + email;
+    info "PO Number = " + PO_Number;
+    newPurchaseOrder = Map();
+    newPurchaseOrder.put("Vendor_Name",vendorId);
+    newPurchaseOrder.put("Subject",agilePOName);
+    newPurchaseOrder.put("Due_Date",oriDueDate);
+    newPurchaseOrder.put("Status","Created");
+    newPurchaseOrder.put("Contact_Name",contactId);
+    newPurchaseOrder.put("PO_Date",poDate);
+    newPurchaseOrder.put("Billing_Street",billingStreet);
+    newPurchaseOrder.put("Billing_City",billingCity);
+    newPurchaseOrder.put("Billing_Country",billingCountry);
+    newPurchaseOrder.put("Billing_Code",billingCode);
+    newPurchaseOrder.put("Billing_State",billingState);
+    newPurchaseOrder.put("Shipping_Street",shippingStreet);
+    newPurchaseOrder.put("Shipping_City",shippingCity);
+    newPurchaseOrder.put("Shipping_Code",shippingCode);
+    newPurchaseOrder.put("Shipping_State",shippingState);
+    newPurchaseOrder.put("Shipping_Country",shippingCountry);
+    // sales
+    if(status == "sales")
+    {
+        newPurchaseOrder.put("Product_Details",salesListRec);
+    }
+    // end of sales
+    else if(status == "service")
+    {
+        newPurchaseOrder.put("Product_Details",serviceListRec);
+    }
+    // end of service
+    else if(status == "rental")
+    {
+        newPurchaseOrder.put("Product_Details",rentalListRec);
+    }
+    // end of rental
+    if(getPOAgile.get("Tax_Rate") != 10)
+    {
+        newPurchaseOrder.put("$line_tax",0);
+    }
+    else
+    {
+        newPurchaseOrder.put("$line_tax",{{"percentage":10,"name":"GST on Income"}});
+    }
+    info "newPurchaseOrder = " + newPurchaseOrder;
+    newPO = zoho.crm.createRecord("Purchase_Orders",newPurchaseOrder);
+    info "new PO = " + newPO;
+    PO_Number = newPO.get("id");
+    info "PO Number = " + PO_Number;
+    // sales mapping
+    mdata = {"data":{{"Vendor.Vendor_Name":vendorName,"Due_Date":dueDate.toString("dd MMM yyyy"),"Purchase_Order_Date":poDate.toString("dd MMM yyyy"),"Contact_Name.First_Name":firstName,"Account_Name":accountName,"Contact_Name.Email":email,"Purchase_Order_Date":issueDate.toString("dd MMM yyyy"),"Purchase_Order.Purchase_Order_Number":PO_Number,"Deal_Number":QuoteNumber,"Sales_Purchase_Order":salesList,"Sales_Sub_Total":currencyIs + " " + subTotal,"Sales_GST":currencyIs + " " + gst,"Sales_Grand_Total":currencyIs + " " + grandTotal}}};
+    //  end of sales mapping
+    // service mapping
+    mdata = {"data":{{"Vendor.Vendor_Name":vendorName,"Due_Date":dueDate.toString("dd MMM yyyy"),"Purchase_Order_Date":poDate.toString("dd MMM yyyy"),"Contact_Name.First_Name":firstName,"Account_Name":accountName,"Contact_Name.Email":email,"Purchase_Order_Date":issueDate.toString("dd MMM yyyy"),"Purchase_Order.Purchase_Order_Number":PO_Number,"Deal_Number":QuoteNumber,"Service_Purchase_Order":serviceList,"Service_Sub_Total":currencyIs + " " + subTotal,"Service_GST":currencyIs + " " + gst,"Service_Grand_Total":currencyIs + " " + grandTotal}}};
+    // end of service mapping
+    // rental mapping
+    mdata = {"data":{{"Vendor.Vendor_Name":vendorName,"Due_Date":dueDate.toString("dd MMM yyyy"),"Purchase_Order_Date":poDate.toString("dd MMM yyyy"),"Contact_Name.First_Name":firstName,"Account_Name":accountName,"Contact_Name.Email":email,"Purchase_Order_Date":issueDate.toString("dd MMM yyyy"),"Purchase_Order.Purchase_Order_Number":PO_Number,"Deal_Number":QuoteNumber,"Rental_Purchase_Order":rentalList,"Rental_Sub_Total":currencyIs + " " + subTotal,"Rental_GST":currencyIs + " " + gst,"Rental_Grand_Total":currencyIs + " " + grandTotal}}};
+    // end of rental mapping
+    info mdata;
+    data = Map();
+    data.put("output_format","pdf");
+    data.put("filename","Purchase Order" + firstName);
+    data.put("merge_data",mdata);
+    info data;
+    mergedown = invokeurl
+    [
+        url :"https://writer.zoho.com.au/writer/api/v1/documents/" + resourceId + "/merge/download"
+        type :POST
+        parameters:data
+        connection:"writer"
+    ];
+    info mergedown;
+    info zoho.crm.attachFile("Agile_Purchase_Orders",agilePoId,mergedown);
+    if(getDeal != null)
+    {
+        info zoho.crm.attachFile("Deals",dealId,mergedown);
+    }
+    //  bawa ke fase awal unit pricenya
+    info "update record for purchase order" + zoho.crm.updateRecord("Agile_Purchase_Orders",agilePoId,{"Purchase_Order":PO_Number});
+    // sales
+    if(status == "sales")
+    {
+        info "update record price" + zoho.crm.updateRecord("Products",salesQuote.get("Model").get("id"),{"Unit_Price":tempPrice});
+    }
+    // end of sales
+    else if(status == "service")
+    {
+        info "update record price" + zoho.crm.updateRecord("Products",serviceQuote.get("Model").get("id"),{"Unit_Price":tempPrice});
+    }
+    // end of serivce
+    else if(status == "rental")
+    {
+        info "update record price" + zoho.crm.updateRecord("Products",rentalQuote.get("Model").get("id"),{"Unit_Price":tempPrice});
+    }
+    // end of rental
+    return "under development";
+}
