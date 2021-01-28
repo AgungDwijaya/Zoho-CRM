@@ -1,0 +1,270 @@
+getleadsdetails = zoho.crm.getRecordById("Leads",leadid);
+info getleadsdetails;
+firstname = getleadsdetails.get("First_Name");
+lastname = getleadsdetails.get("Last_Name");
+phone_primary = getleadsdetails.get("Phone_Landline");
+phone_secondary = getleadsdetails.get("Phone_Secondary");
+if(getleadsdetails.get("Sector") != null)
+{
+	sector = getleadsdetails.get("Sector");
+}
+else
+{
+	sector = "";
+}
+if(getleadsdetails.get("Company") != null)
+{
+	company = getleadsdetails.get("Company");
+}
+else
+{
+	company = "";
+}
+email = getleadsdetails.get("Email");
+if(getleadsdetails.get("Shipping_Street") != null)
+{
+	shipping_street = getleadsdetails.get("Shipping_Street");
+}
+else
+{
+	shipping_street = "";
+}
+info "shipping_street = " + shipping_street;
+shipping_city = ifnull("",getleadsdetails.get("Shipping_City"));
+if(getleadsdetails.get("Shipping_City") != null)
+{
+	shipping_city = getleadsdetails.get("Shipping_City");
+}
+else
+{
+	shipping_city = "";
+}
+info "shipping_city = " + shipping_city;
+if(getleadsdetails.get("Shipping_State") != null)
+{
+	shipping_state = getleadsdetails.get("Shipping_State");
+}
+else
+{
+	shipping_state = "";
+}
+info "shipping_state = " + shipping_state;
+if(getleadsdetails.get("Shipping_Country") != null)
+{
+	shipping_country = getleadsdetails.get("Shipping_Country");
+}
+else
+{
+	shipping_country = "";
+}
+info "shipping_country = " + shipping_country;
+if(getleadsdetails.get("Shipping_Code") != null)
+{
+	shipping_code = getleadsdetails.get("Shipping_Code");
+}
+else
+{
+	shipping_code = "";
+}
+info "shipping_code = " + shipping_code;
+billing_shipping = getleadsdetails.get("Shipping_is_Billing");
+if(getleadsdetails.get("Billing_Street") != null)
+{
+	billing_street = getleadsdetails.get("Billing_Street");
+}
+else
+{
+	billing_street = "";
+}
+if(getleadsdetails.get("Billing_City") != null)
+{
+	billing_city = getleadsdetails.get("Billing_City");
+}
+else
+{
+	billing_city = "";
+}
+if(getleadsdetails.get("Billing_State") != null)
+{
+	billing_state = getleadsdetails.get("Billing_State");
+}
+else
+{
+	billing_state = "";
+}
+billing_country = ifnull("",getleadsdetails.get("Billing_Country"));
+if(getleadsdetails.get("Billing_Country") != null)
+{
+	billing_country = getleadsdetails.get("Billing_Country");
+}
+else
+{
+	billing_country = "";
+}
+billing_code = ifnull("",getleadsdetails.get("Billing_Code"));
+if(getleadsdetails.get("Billing_Code") != null)
+{
+	billing_code = getleadsdetails.get("Billing_Code");
+}
+else
+{
+	billing_code = "";
+}
+if(getleadsdetails.get("Recipient_Name") != null)
+{
+	recipient_name = getleadsdetails.get("Recipient_Name");
+}
+else
+{
+	recipient_name = "";
+}
+if(getleadsdetails.get("Recipient_Mobile") != null)
+{
+	recipient_phone = getleadsdetails.get("Recipient_Mobile");
+}
+else
+{
+	recipient_phone = "";
+}
+if(getleadsdetails.get("Recipient_Email") != null)
+{
+	recipient_email = getleadsdetails.get("Recipient_Email");
+}
+else
+{
+	recipient_email = "";
+}
+//
+Firstname = getleadsdetails.get("First_Name");
+Lastname = getleadsdetails.get("Last_Name");
+code = getleadsdetails.get("Shipping_Code");
+taxnumber = ifnull("",getleadsdetails.get("Tax_Number"));
+street = getleadsdetails.get("Shipping_Street");
+city = getleadsdetails.get("Shipping_City");
+country = getleadsdetails.get("Shipping_Country");
+phone = getleadsdetails.get("Phone");
+email = getleadsdetails.get("Email");
+productname = getleadsdetails.get("Product_Name");
+//subtotal = LeaddetailsDetails.get("Sub_Total1");
+//info subtotal;
+//grandtotal = LeaddetailsDetails.get("Grand_Total");
+//adjustments = LeaddetailsDetails.get("Adjustments");
+// Accountid = LeaddetailsDetails.get("Company").get("id");  Accountid = LeaddetailsDetails.get("Company").get("id");
+// accphone = zoho.crm.getRecordById("Accounts",Accountid).get("Phone");
+// accphone = zoho.crm.getRecordById("Accounts",Accountid).get("Phone");
+Relatedquotes = zoho.crm.getRelatedRecords("Leads_Quotes","Leads",leadid.toLong());
+info Relatedquotes;
+sub_forms = List();
+Quotedetails = List();
+Productlist = List();
+tem = "";
+quotesubadjgrand = List();
+for each  Quote in Relatedquotes
+{
+	Quoteid = Quote.get("id");
+	info Quoteid;
+	quoteDetails = zoho.crm.getRecordById("Quotes",Quoteid.toLong());
+	subject = quoteDetails.get("Subject");
+	quotenumber = quoteDetails.get("Quote_Number");
+	recipientname = quoteDetails.get("Recepient_name");
+	validuntil = quoteDetails.get("Valid_Till");
+	createdtime = quoteDetails.get("Created_Time");
+	termsandcond = quoteDetails.get("Terms_and_Conditions");
+	currency = quoteDetails.get("Currency");
+	quotesubtotal = quoteDetails.get("Sub_Total");
+	quoteadjustments = quoteDetails.get("Adjustment");
+	quotegrandtotal = quoteDetails.get("Grand_Total");
+	// 	new assign value
+	quotetax = quoteDetails.get("Tax");
+	quotediscount = quoteDetails.get("Discount");
+	info "Quote Tax" + quotetax;
+	info "Quote Discount" + quotediscount;
+	info "Quote Adjustment : " + quoteadjustments;
+	// 	end of new assign value
+	/*quotesub_adj_grand = Map();
+	quotesub_adj_grand.put("Quotes.Sub_Total",quotesubtotal);
+	quotesub_adj_grand.put("Quotes.Adjustment",quoteadjustments);
+	quotesub_adj_grand.put("Quotes.Grand_Total",quotegrandtotal);
+	quotesubadjgrand.add(quotesub_adj_grand);*/
+	productDet = ifnull(quoteDetails.get("Product_Details"),"");
+	info productDet;
+	for each  eachProd in productDet
+	{
+		prodname = eachProd.get("product").get("name");
+		qty = eachProd.get("quantity");
+		unitprice = eachProd.get("unit_price");
+		totalamount = eachProd.get("net_total");
+		listprice = eachProd.get("list_price");
+		tem = tem + "Product Name: " + prodname + " | " + "Qty: " + qty + " | " + "Price/Unit: " + unitprice + " | " + "Total Price: " + totalamount;
+		prodid = eachProd.get("product").get("id");
+		info qty;
+		discount = eachProd.get("Discount");
+		tax = eachProd.get("Tax");
+		subform = Map();
+		subform.put("Amount",eachProd.get("total"));
+		subform.put("Discount",eachProd.get("Discount"));
+		subform.put("Product",eachProd.get("product").get("id"));
+		subform.put("Quantity",eachProd.get("quantity").toString());
+		subform.put("Tax",eachProd.get("Tax"));
+		subform.put("Unit_Price",eachProd.get("list_price"));
+		subform.put("Total_Amount",eachProd.get("net_total"));
+		sub_forms.add(subform);
+		info "info jep :" + subform;
+		quotedetails = Map();
+		quotedetails.put("Quote_Details.Product",prodname);
+		quotedetails.put("Quote_Details.Unit_Price",listprice);
+		quotedetails.put("Quote_Details.Qty",qty);
+		quotedetails.put("Quote_Details.Discount",discount);
+		quotedetails.put("Quote_Details.Amount1",listprice);
+		quotedetails.put("Quote_Details.Tax",tax);
+		quotedetails.put("Quote_Details.Total_Amount1",totalamount);
+		Quotedetails.add(quotedetails);
+	}
+}
+parammap = Map();
+parammap.put("Quote_Information",sub_forms);
+parammap.put("Quote_Subtotal",quotesubtotal);
+parammap.put("Quote_Adjustment",quoteadjustments);
+parammap.put("Quote_Grand_Total",quotegrandtotal);
+// new value
+parammap.put("Quote_Tax",quotetax);
+parammap.put("Quote_Discount",quotediscount);
+parammap.put("Quote_Sent",true);
+parammap.put("Quote_Sent_Date",zoho.currentdate);
+// end of new value
+update = zoho.crm.updateRecord("Leads",leadid,parammap);
+info parammap;
+info update;
+resourceid = "grtcna143ae20b389434984d0f82b9907132f";
+//Subformdata={"data":{{"Quote_Details.Product":prodname,"Quote_Details.Unit_Price":listprice,"Quote_Details.Qty":qty,"Quote_Details.Discount":discount,"Quote_Details.Amount1":amount,"Quote_Details.Tax":tax,"Quote_Details.Total_Amount1":totalamount}}};
+mdata = {"data":{{"Quotes.Subject":subject,"Quotes.Quote_Number":quotenumber,"First_Name":Firstname,"Last_Name":Lastname,"Shipping_Code":code,"Tax_Number":taxnumber,"Shipping_Street":street,"Shipping_City":city,"Shipping_Country":country,"Phone":phone,"Email":email,"Quotes.Recepient_name":recipientname,"Quotes.Created_Time":createdtime,"Quotes.Valid_Till":validuntil,"Quotes.Terms_and_Conditions":termsandcond,"Quotes.Currency":currency,"Quote_Details":Quotedetails,"Quotes_SubTotal":quotesubtotal,"Quotes_Adjustment":quoteadjustments,"Quotes_GrandTotal":quotegrandtotal,"Quotes_Discount":quotediscount,"Quotes_Tax":quotetax,"Quotes_Adjustment":quoteadjustments}}};
+info mdata;
+data = Map();
+data.put("output_format","pdf");
+data.put("filename","Quotation_" + Firstname);
+data.put("merge_data",mdata);
+info data;
+mergedown = invokeurl
+[
+	url :"https://writer.zoho.com.au/writer/api/v1/documents/" + resourceid + "/merge/download"
+	type :POST
+	parameters:data
+	connection:"writer"
+];
+info mergedown;
+//attached to Enrolments module
+attach1 = zoho.crm.attachFile("Leads",leadid,mergedown);
+info attach1;
+sendmail
+[
+	from :zoho.adminuserid
+	to :email
+	subject :"Your IonOpticks Quote #" + quotenumber
+	message :"Dear " + firstname + ",<p> Enclosed is your quote #" + quotenumber + " for US$ " + quotegrandtotal + ". To accept the quote, please click on the link below.<p> <a href=' http://zfrmz.com.au/gnVQ6IJqSMPDHUg0SjJw?first=" + firstname + "&last=" + lastname + "&phonep=" + phone_primary + "&phones=" + phone_secondary + "&sector=" + sector + "&company=" + company + "&shippingstreet=" + shipping_street + "&email=" + email + "&shippingstreet=" + shipping_street + "&shippingcity=" + shipping_city + "&shippingstate=" + shipping_state + "&shippingcountry=" + shipping_country + "&shippingcode=" + shipping_code + "&shippingbilling=" + billing_shipping + "&billingstreet=" + billing_street + "&billingcity=" + billing_city + "&billingstate=" + billing_state + "&billingcountry=" + billing_country + "&billingcode=" + billing_code + "&recipient_name=" + recipient_name + "&subtotal=" + quotesubtotal + "&tax=" + quotetax + "&discount=" + quotediscount + "&adjustment=" + quoteadjustments + "&recipient_phone=" + recipient_phone + "&recipient_email=" + recipient_email + "&quotenumber1=" + quotenumber + "&grandtotal=" + quotegrandtotal + "&taxid=" + taxnumber + "&item=" + tem + "&quantity=" + qty + "' >View and Accept Quotation</a><p>Please note that we do not accept payments via cheque. Please email accounts@ionopticks.com with any billing related enquiries or remittance advice." + "<p>" + "IonOpticks Pty Ltd" + "<br>" + "68-70 Hanover Street, Fitzroy" + "<br>" + "W: www.ionopticks.com"
+	Attachments :file:mergedown
+]
+updateVar = Map();
+updateVar.put("Quote_Sent_Date",zoho.currentdate);
+zoho.crm.updateRecord("Leads",leadid,{"Quote_Sent":True,"Quote_Sent_Date":updateVar});
+return "Success";
+// 12965000000539007
