@@ -1,0 +1,85 @@
+resp = zoho.crm.getRecordById("Purchase_Orders",poID);
+tit = ifnull(resp.get("Vendor_Name"),"").get("name");
+sdate = ifnull(resp.get("PO_Date"),"");
+edate = ifnull(resp.get("Due_Date"),"");
+poNum = ifnull(resp.get("PO_Number"),"");
+poNum1 = ifnull(resp.get("Purchase_Order_Number_1"),"");
+projectid = ifnull(resp.get("775484000090130001"),"");
+if(projectid == "")
+{
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info "Portal ID :" + port;
+	projMap = Map();
+	projMap.put("name",tit);
+	projMap.put("description","Project Description");
+	projMap.put("start_date",sdate);
+	projMap.put("end_date",edate);
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info port;
+	createProj = zoho.projects.createProject(port,projMap);
+	info "Create Project : " + createProj;
+	projectid = createProj.getJSON("projects");
+	info projectid;
+	for each  rec in projectid
+	{
+		projID = rec.get("id");
+		projname = rec.get("name");
+	}
+	update = zoho.crm.updateRecord("Purchase_Orders",poID,{"775484000090130001":projID.toString()});
+	mp2 = Map();
+	mp2.put("name",poNum1);
+	mp2.put("Subject","Subject");
+	mp2.put("start_date",sdate);
+	mp2.put("end_date",edate);
+	info mp2;
+	create1 = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projID + "/tasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info create1;
+	taskId = create1.get("tasks").toMap().get("id_string");
+	info taskId;
+	resp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projID + "/tasks/" + taskId + "/subtasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info resp;
+}
+else
+{
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info "Portal ID :" + port;
+	mp2 = Map();
+	mp2.put("name",poNum1);
+	mp2.put("Subject","Subject");
+	mp2.put("start_date",sdate);
+	mp2.put("end_date",edate);
+	info mp2;
+	create1 = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projectid + "/tasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info create1;
+	taskId = create1.get("tasks").toMap().get("id_string");
+	info taskId;
+	resp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projID + "/tasks/" + taskId + "/subtasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info resp;
+}
