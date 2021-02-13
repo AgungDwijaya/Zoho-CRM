@@ -1,0 +1,93 @@
+resp = zoho.crm.getRecordById("Purchase_Orders",poID);
+tit = ifnull(resp.get("Vendor_Name"),"").get("name");
+sdate = ifnull(resp.get("PO_Date"),"");
+edate = ifnull(resp.get("Due_Date"),"");
+poNum = ifnull(resp.get("PO_Number"),"");
+poNum1 = ifnull(resp.get("Purchase_Order_Number_1"),"");
+projectid = ifnull(resp.get("Project_ID"),"");
+proddetails = resp.get("Product_Details");
+for each  prod in proddetails
+{
+	prodname = prod.get("product").get("name");
+}
+info "projefct id : " + projectid;
+if(projectid == "")
+{
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info "Portal ID :" + port;
+	projMap = Map();
+	projMap.put("name",tit);
+	projMap.put("description","Project Description");
+	projMap.put("start_date",sdate.toString("MM-dd-yyyy"));
+	projMap.put("end_date",edate.toString("MM-dd-yyyy"));
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info "First Map :" + projMap;
+	createProj = zoho.projects.createProject(port,projMap);
+	info "Create Project : " + createProj;
+	projectid = createProj.getJSON("projects");
+	for each  rec in projectid
+	{
+		projID = rec.get("id");
+		projname = rec.get("name");
+	}
+	update = zoho.crm.updateRecord("Purchase_Orders",poID,{"Project_ID":projID.toString()});
+	mp2 = Map();
+	mp2.put("name",poNum1);
+	mp2.put("Subject","Subject");
+	mp2.put("start_date",sdate.toString("MM-dd-yyyy"));
+	mp2.put("end_date",edate.toString("MM-dd-yyyy"));
+	info "If case Task map :" + mp2;
+	create1 = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projID + "/tasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info create1;
+	taskId = create1.get("tasks").toMap().get("id_string");
+	mp2.put("name",prodname);
+	info "Task  ID :" + taskId;
+	resp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projID + "/tasks/" + taskId + "/subtasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info "Sub task : " + resp;
+}
+else
+{
+	proID = zoho.projects.getPortals();
+	port = proID.get("portals").get(0).get("id_string");
+	info "Portal ID :" + port;
+	mp2 = Map();
+	mp2.put("name",poNum1);
+	mp2.put("Subject","Subject");
+	mp2.put("start_date",sdate.toString("MM-dd-yyyy"));
+	mp2.put("end_date",edate.toString("MM-dd-yyyy"));
+	info "Map  :" + mp2;
+	info "Project id else  :" + projectid;
+	create1 = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projectid + "/tasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info "Create task:  " + create1;
+	taskId = create1.get("tasks").toMap().get("id_string");
+	mp2.put("name",prodname);
+	info "Task id else case  : " + taskId;
+	resp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + port + "/projects/" + projectid + "/tasks/" + taskId + "/subtasks/"
+		type :POST
+		parameters:mp2
+		connection:"crmproj"
+	];
+	info "Elase case sub task :" + resp;
+}
