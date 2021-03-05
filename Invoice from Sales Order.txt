@@ -1,0 +1,164 @@
+getDeal = zoho.crm.getRecordById("Deals",dealId);
+currentDate = zoho.currentdate;
+contactId = getDeal.get("Contact_Name").get("id");
+invoiceMap = Map();
+invoiceMap.put("Owner",ifNull(getDeal.get("Owner"),""));
+invoiceMap.put("Subject","Invoice_" + currentDate);
+invoiceMap.put("Invoice_Date",currentDate);
+//invoiceMap.put("Due_Date", ifNull(getDeal.get(""),""));
+//invoiceMap.put("Invoice_Paid",);
+//invoiceMap.put("Sales_Commision", ifNull(getDeal.get(""),""));
+invoiceMap.put("Account_Name",ifNull(getDeal.get("Account_Name"),""));
+invoiceMap.put("Contact_Name",ifNull(getDeal.get("Contact_Name"),""));
+invoiceMap.put("Currency",ifNull(getDeal.get("Currency"),""));
+//invoiceMap.put("Invoice_No", ifNull(getDeal.get(""),""));
+//invoiceMap.put("Sales_Order", ifNull(getDeal.get(""),""));
+//invoiceMap.put("Purchase_Order", ifNull(getDeal.get(""),""));
+//invoiceMap.put("Excise_Duty", ifNull(getDeal.get("Owner"),""));
+invoiceMap.put("Status","Created");
+invoiceMap.put("Created_By",ifNull(getDeal.get("Owner"),""));
+invoiceMap.put("Owner",ifNull(getDeal.get("Owner"),""));
+invoiceMap.put("Modified_By",ifNull(getDeal.get("Owner"),""));
+invoiceMap.put("Exchange_Rate",ifNull(getDeal.get("Exchange_Rate"),""));
+invoiceMap.put("Shipping_Street",ifNull(getDeal.get("Shipping_Street"),""));
+invoiceMap.put("Shipping_City",ifNull(getDeal.get("Shipping_City"),""));
+invoiceMap.put("Shipping_State",ifNull(getDeal.get("Shipping_State"),""));
+invoiceMap.put("Shipping_Country",ifNull(getDeal.get("Shipping_Country"),""));
+invoiceMap.put("Shipping_Code",ifNull(getDeal.get("Shipping_Code"),""));
+invoiceMap.put("Billing_Street",ifNull(getDeal.get("Billing_Street"),""));
+invoiceMap.put("Billing_City",ifNull(getDeal.get("Billing_City"),""));
+invoiceMap.put("Billing_State",ifNull(getDeal.get("Billing_State"),""));
+invoiceMap.put("Billing_Country",ifNull(getDeal.get("Billing_Country"),""));
+invoiceMap.put("Billing_Code",ifNull(getDeal.get("Billing_Code"),""));
+//invoiced items
+salesOrder = zoho.crm.getRelatedRecords("SalesOrders","Contacts",contactId);
+invoicedItems = list();
+x = 0;
+for each  order in salesOrder
+{
+	x = x + 1;
+	if(x == 1)
+	{
+		salesOrderId = order.get("id");
+		info "Sales Order ID: " + salesOrderId;
+		orderDetails = zoho.crm.getRecordById("Sales_Orders",salesOrderId);
+		prodDetails = orderDetails.get("Product_Details");
+		for each  prod in prodDetails
+		{
+			prodName = prod.get("product").get("name");
+			prodId = prod.get("product").get("id");
+			listPrice = prod.get("list_price");
+			quantity = prod.get("quantity");
+			amount = prod.get("total_after_discount");
+			discount = prod.get("Discount");
+			tax = prod.get("Tax");
+			total = prod.get("total");
+			prodDesc = prod.get("product_description");
+			mp = Map();
+			mp.put("product",{"name":prodName,"id":prodId});
+			mp.put("List_Price",listPrice);
+			mp.put("quantity",quantity);
+			mp.put("Amount",amount);
+			mp.put("Discount",discount);
+			mp.put("Tax",tax);
+			mp.put("Net_Total",total);
+			mp.put("product_description",prodDesc);
+			invoicedItems.add(mp);
+		}
+	}
+}
+//end of invoiced items
+invoiceMap.put("Product_Details",invoicedItems);
+invoiceMap.put("Sub_Total",ifNull(getDeal.get("Invoice_Sub_Total"),""));
+invoiceMap.put("Grand_Total",ifNull(getDeal.get("Invoice_Grand_Total"),""));
+invoiceMap.put("Tax",ifNull(getDeal.get("Invoice_Tax"),""));
+invoiceMap.put("Discount",ifNull(getDeal.get("Invoice_Discount"),""));
+invoiceMap.put("Adjustment",ifNull(getDeal.get("Invoice_Adjustments"),0.0).toDecimal());
+invoiceMap.put("Description",ifNull(getDeal.get("Description"),""));
+invoiceMap.put("Terms_And_Conditions",ifNull(getDeal.get("Terms_And_Conditions"),""));
+invoiceMap.put("Deal_Name",dealId);
+invoiceMap.put("Description",ifNull(getDeal.get("Description"),""));
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__Add_to_XERO",);
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__Xero_Invoice_No",);
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__Owed_Amount",);
+//invoiceMap.put("Pick_List_2", ifnull(getDeal.get(""),""));
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__Xero_Invoice_Url",);
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__XERO_Id",);
+//invoiceMap.put("crmcustomisationforzohonxeroplugin__Paid_Amount",);
+//invoiceMap.put("Tracking_Category", ifnull(getDeal.get(""),""));
+info "Map: " + invoiceMap;
+createInvoice = zoho.crm.createRecord("Invoices",invoiceMap);
+info "Create Invoice: " + createInvoice;
+invoiceId = createInvoice.get("id");
+info "Invoice Details: " + zoho.crm.getRecordById("Invoices",invoiceId);
+invoiceDealName = createInvoice.get("Deal_Name").toString();
+//info "Invoice Details: " + zoho.crm.getRecordById("Invoices", invoiceId);
+updateSalesOrder = zoho.crm.updateRecord("Sales_Orders",salesOrderId,{"Deal_Name":invoiceDealName});
+info updateSalesOrder;
+/*
+//update Deal
+orderDate = salesOrder.get("shopifyextension_Shopify_Order_Created_Date");
+updateDeal = zoho.crm.updateRecord("Deals", dealId, {"Invoice_Sent":true, "Invoice_Paid":true, "Invoice_Paid_Date":orderDate});
+info updateDeal;
+//update Deal
+*/
+// New Low Stock Level
+getDeal = zoho.crm.getRecordById("Deals",dealId);
+info "Deal ID: " + dealId;
+getInvoice = zoho.crm.getRecordById("Invoices",invoiceId);
+//info "invoiceDetails = "+ invoiceDetails;
+//invoiceNo = invoiceDetails.get("Invoice_No");
+//info "invoiceNo = " + invoiceNo;
+info "detailInvoice = " + getInvoice;
+sentStatus = false;
+insufficientList = list();
+currentStock = list();
+invoiceList = list();
+invoiceDetails = getInvoice.get("Product_Details");
+invoiceNo = getInvoice.get("Invoice_No");
+temp = "";
+for each  prod in invoiceDetails
+{
+	prodid = prod.get("product").get("id");
+	info "product entity = " + prod.get("product");
+	prodname = prod.get("product").get("name");
+	info "name: " + prodname;
+	getprod = zoho.crm.getRecordById("Products",prodid);
+	prodqty = getprod.get("Qty_in_Stock");
+	info "Qty: " + prodqty;
+	if(prodqty < 0)
+	{
+		sentStatus = true;
+		temp = temp + prodname + "<br>" + "Stock on Hand: " + prodqty + "<br><br>";
+	}
+}
+info "Insufficient list:" + insufficientList;
+info "Current stock:" + currentStock;
+info "temp =" + temp;
+info sentStatus;
+if(sentStatus)
+{
+	resp = zoho.crm.updateRecord("Deals",dealId.toLong(),{"Stock_Level":"Insufficient"});
+	info "resp = " + resp;
+	sendmail
+	[
+		from :zoho.adminuserid
+		to :"danu@smartmates.com.au"
+		subject :"Insufficient Stock for Order #" + invoiceNo
+		message :"Dear Tristan," + "<br>" + " " + "<br>" + "The following order has been confirmed. You are receiving this notification because there is insufficient stock on hand to fulfill order #" + invoiceNo + "." + "<br>" + " " + "<br>" + temp + "Please produce sufficient units to meet this order and reinstate stock-on-hand to the required levels." + "<br>" + " " + "<br>" + "If there are any issues that will extend production turnaround times beyond the target standards, please notify the Head of Customer Experience and General Manager." + "<br>" + " " + "<br>" + "Thanks," + "<br>" + " " + "<br>" + "IonOpticks Admin"
+	]
+	// 	
+	sendmail
+	[
+		from :zoho.adminuserid
+		to :"tristan@ionopticks.com"
+		cc:"xavier@ionopticks.com"
+		subject :"Insufficient Stock for Order #" + invoiceNo
+		message :"Dear Tristan," + "<br>" + " " + "<br>" + "The following order has been confirmed. You are receiving this notification because there is insufficient stock on hand to fulfill order #" + invoiceNo + "." + "<br>" + " " + "<br>" + temp + "Please produce sufficient units to meet this order and reinstate stock-on-hand to the required levels." + "<br>" + " " + "<br>" + "If there are any issues that will extend production turnaround times beyond the target standards, please notify the Head of Customer Experience and General Manager." + "<br>" + " " + "<br>" + "Thanks," + "<br>" + " " + "<br>" + "IonOpticks Admin"
+	]
+}
+else
+{
+	resp = zoho.crm.updateRecord("Deals",dealId.toLong(),{"Stock_Level":"Sufficient"});
+	info "resp = " + resp;
+}
