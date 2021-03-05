@@ -1,0 +1,163 @@
+salesOrder = zoho.crm.getRecordById("Sales_Orders",salesOrderId);
+ownerId = salesOrder.get("Owner").get("id");
+ownerEmail = salesOrder.get("Owner").get("email");
+orderSubject = salesOrder.get("Subject");
+accId = salesOrder.get("Account_Name").get("id");
+contactId = salesOrder.get("Contact_Name").get("id");
+// type stocklevel shipped deliverydelayed delivered
+mapField = Map();
+//mapField.put("", ifNull(salesOrder.get(""),""));
+mapField.put("Layout","12965000000000631");
+if(ownerId != null)
+{
+	mapField.put("Owner",ownerId);
+}
+if(salesOrder.get("Subject") != null)
+{
+	mapField.put("Deal_Name",salesOrder.get("Subject"));
+}
+mapField.put("Deals_Type","WooCommerce");
+mapField.put("Stage","Stage 1: Product Stock Tracking");
+if(accId != null)
+{
+	mapField.put("Account_Name",accId);
+}
+if(contactId != null)
+{
+	mapField.put("Contact_Name",contactId);
+}
+if(ownerEmail != null)
+{
+	mapField.put("Contact_Email_Address",ownerEmail);
+}
+//mapField.put("Contact_Phone_Number", ifNull(salesOrder.get(""),""));
+//mapField.put("Account_ID_Number", ifNull(salesOrder.get(""),""));
+if(salesOrder.get("Amount") != null)
+{
+	mapField.put("Amount",salesOrder.get("Amount"));
+}
+//mapField.put("Closing_Date"), ifNull(salesOrder.get(""),""));
+//mapField.put("Invoice", ifNull(salesOrder.get(""),""));
+//mapField.put("Quote_ID", ifNull(salesOrder.get(""),""));
+//mapField.put("Tax_No", ifNull(salesOrder.get(""),""));
+if(salesOrder.get("Currency") != null)
+{
+	mapField.put("Currency",salesOrder.get("Currency"));
+}
+if(salesOrder.get("Exchange_Rate") != null)
+{
+	mapField.put("Exchange_Rate",salesOrder.get("Exchange_Rate"));
+}
+if(salesOrder.get("Shipping_Street") != null)
+{
+	mapField.put("Shipping_Street",salesOrder.get("Shipping_Street"));
+}
+if(salesOrder.get("Shipping_City") != null)
+{
+	mapField.put("Shipping_City",salesOrder.get("Shipping_City"));
+}
+if(salesOrder.get("Shipping_State") != null)
+{
+	mapField.put("Shipping_State",salesOrder.get("Shipping_State"));
+}
+if(salesOrder.get("Shipping_Country") != null)
+{
+	mapField.put("Shipping_Country",salesOrder.get("Shipping_Country"));
+}
+if(salesOrder.get("Shipping_Code") != null)
+{
+	mapField.put("Shipping_Code",salesOrder.get("Shipping_Code"));
+}
+if(salesOrder.get("Billing_Street") != null)
+{
+	mapField.put("Billing_Street",salesOrder.get("Billing_Street"));
+}
+if(salesOrder.get("Billing_City") != null)
+{
+	mapField.put("Billing_City",salesOrder.get("Billing_City"));
+}
+if(salesOrder.get("Billing_State") != null)
+{
+	mapField.put("Billing_State",salesOrder.get("Billing_State"));
+}
+if(salesOrder.get("Billing_Country") != null)
+{
+	mapField.put("Billing_Country",salesOrder.get("Billing_Country"));
+}
+if(salesOrder.get("Billing_Code") != null)
+{
+	mapField.put("Billing_Code",salesOrder.get("Billing_Code"));
+}
+//mapField.put("Recipient_Name", ifnull(salesOrder.get(""),""));
+//mapField.put("Recipient_Phone_No", ifNull(salesOrder.get(""),""));
+//mapField.put("Recipient_Email", ifNull(salesOrder.get(""),""));
+if(salesOrder.get("Sub_Total") != null)
+{
+	mapField.put("Invoice_Sub_Total",salesOrder.get("Sub_Total"));
+}
+if(salesOrder.get("Discount") != null)
+{
+	mapField.put("Invoice_Discount",salesOrder.get("Discount"));
+}
+if(salesOrder.get("Tax") != null)
+{
+	mapField.put("Invoice_Tax",salesOrder.get("Tax"));
+}
+if(salesOrder.get("Adjustment") != null)
+{
+	mapField.put("Invoice_Adjustments",salesOrder.get("Adjustment"));
+}
+if(salesOrder.get("Grand_Total") != null)
+{
+	mapField.put("Invoice_Grand_Total",salesOrder.get("Grand_Total"));
+}
+if(salesOrder.get("shopifyextension_Shopify_Order_Created_Date") != null)
+{
+	mapField.put("Invoice_Sent_Date",salesOrder.get("shopifyextension_Shopify_Order_Created_Date"));
+}
+//map invoiceDetails
+prodDetails = salesOrder.get("Product_Details");
+invoiceDetails = list();
+for each  prod in prodDetails
+{
+	prodName = prod.get("product").get("name");
+	prodId = prod.get("product").get("id");
+	listPrice = prod.get("list_price");
+	quantity = prod.get("quantity");
+	amount = prod.get("total_after_discount");
+	discount = prod.get("Discount");
+	tax = prod.get("Tax");
+	total = prod.get("total");
+	mp = Map();
+	mp.put("Product",{"name":prodName,"id":prodId});
+	mp.put("Unit_Price",listPrice);
+	mp.put("Qty",quantity);
+	mp.put("Total_Amount",amount);
+	mp.put("Discount",discount);
+	mp.put("Tax",tax);
+	mp.put("Amount",total);
+	invoiceDetails.add(mp);
+}
+mapField.put("Invoice_Details",invoiceDetails);
+if(invoiceDetails != null)
+{
+	mapField.put("Invoice_Details",invoiceDetails);
+}
+//end of invoiceDetails
+//mapField.put("Date_Shipped", ifNull(salesOrder.get(""),""));
+if(salesOrder.get("Carrier") != null)
+{
+	mapField.put("Courrier",salesOrder.get("Carrier"));
+}
+//mapField.put("Tracking_ID", ifNull(salesOrder.get(""),""));
+//mapField.put("Expected_Delivery_Date", ifNull(salesOrder.get(""),""));
+//mapField.put("New_Delivery_Date", ifNull(salesOrder.get(""),""));
+//mapField.put("Date_Delivered", ifNull(salesOrder.get(""),""));
+mapField.put("Description",ifNull(salesOrder.get("Description"),""));
+if(salesOrder.get("Description") != null)
+{
+	mapField.put("Description",salesOrder.get("Description"));
+}
+//mapField.put("Stock", ifNull(salesOrder.get(""),""));
+createDeal = zoho.crm.createRecord("Deals",mapField);
+info createDeal;
