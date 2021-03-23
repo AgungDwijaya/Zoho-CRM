@@ -1,0 +1,16 @@
+list = {1,2,3,4,5};
+for each li in list
+{
+Allleads = zoho.crm.getRecords("Enquiries",li);
+if(Allleads.size() > 0)
+{
+for each ele in Allleads
+{
+update = zoho.crm.updateRecord("Enquiries",ele.get("id"),{"Days_Since_Created":days360(today.toDate(),ele.get("Created_Time").toDate())});
+}
+}
+else
+{
+break;
+}
+}
