@@ -1,0 +1,7 @@
+mergedown = invokeurl
+[
+	url :"https://writer.zoho.com/api/v1/documents/asay2a5df19152acc49c2a5cef98826542561/fields"
+	type :GET
+	connection:"writers"
+];
+info mergedown;
