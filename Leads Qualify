@@ -1,0 +1,41 @@
+getleads = zoho.crm.getRecordById("Leads",id);
+//info getleads;
+qualify = getleads.get("Qualified1");
+mob = getleads.get("Mobile");
+jobtype = getleads.get("Job_Type1");
+Lead_Status = "Not Contacted";
+Lead_Source = "Website";
+new = Map();
+for each  job in jobtype
+{
+	//info job;
+	if((job = "Slab on ground" || job = "Strip footing" || job = "Concrete patio/footpath/driveway" || job = "Concrete pool/surround" || job = "Industrial Concrete Pavements" || job = "Industrial Wall cracks" || job = "Void fill" || job = "Warranty Inquiry") && job != "Others")
+	{
+		val = "No";
+		new.put("Other_Job_Type",true);
+		new.put("Qualified1",val);
+		new.put("Moblie",mob);
+		new.put("Lead_Status",Lead_Status);
+		new.put("Lead_Source",Lead_Source);
+		upqualify = zoho.crm.updateRecord("Leads",id,new);
+	}
+	else if(job = "Others")
+	{
+		val = "No";
+		new.put("Other_Job_Type",true);
+		new.put("Qualified1",val);
+		new.put("Moblie",mob);
+		new.put("Lead_Status",Lead_Status);
+		new.put("Lead_Source",Lead_Source);
+		upqualify = zoho.crm.updateRecord("Leads",id,new);
+	}
+	else
+	{
+		val = "Yes";
+		new.put("Qualified1",val);
+		new.put("Moblie",mob);
+		new.put("Lead_Status",Lead_Status);
+		new.put("Lead_Source",Lead_Source);
+		upqualify = zoho.crm.updateRecord("Leads",id,new);
+	}
+}
