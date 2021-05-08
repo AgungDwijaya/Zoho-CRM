@@ -1,0 +1,24 @@
+rec = zoho.crm.getRecordById("Leads",leadid);
+time = rec.get("Created_Time");
+val = time.weekday();
+info val;
+if(val == 1 || val == 7)
+{
+	mp = Map();
+	mp.put("Lead_created_on","Weekend");
+	mp.put("Weekend_Lead",true);
+	update = zoho.crm.updateRecord("Leads",leadid,mp);
+	// 	mp= map();
+	// mp.put("Weekend_Lead",true);
+}
+// update = zoho.crm.updateRecord("Leads",leadid,{"Lead_created_on":"Weekday"});
+// update = zoho.crm.updateRecord("Leads",leadid,{"Weekday_Lead":"Weekday Lead "});
+update = zoho.crm.updateRecord("Leads",leadid,{"Lead_created_on":"Weekday","Weekday_Lead":true});
+// if ( update == "Weekday" ) 
+// {
+// 	updateWeekday = zoho.crm.updateRecord("Leads", leadid, {"Weekday_Lead":true});
+// }
+// else if ( update == "Weekend" ) 
+// {
+// 	updateWeekend = zoho.crm.updateRecord("Leads", leadid, {"Weekend_Lead":true});
+// }
