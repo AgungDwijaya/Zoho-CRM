@@ -1,0 +1,116 @@
+paramsMap = Map();
+headersMap = Map();
+headersMap.put("Accept","application/vnd.api+json");
+resp = invokeurl
+[
+	url :"https://workdrive.zoho.com/api/v1/files/gg21l72ad5310502844c5acc2bcc7e73a3b94/files"
+	type :GET
+	headers:headersMap
+	connection:"workdrive"
+];
+//info resp;
+getdata = resp.get("data");
+info getdata;
+for each  data in getdata
+{
+	name = data.get("attributes").get("name");
+	info name;
+	//getlink = data.get("attributes").get("permalink");
+	//info getlink;
+}
+getcontacts = zoho.crm.getRecordById("Contacts",id);
+getid = getcontacts.get("id");
+getacc = getcontacts.get("Account_Name").get("name");
+if(name != getacc)
+{
+	createfolder = zoho.workdrive.createFolder(getacc,"gg21l72ad5310502844c5acc2bcc7e73a3b94","workdrive");
+	getdata = createfolder.get("data");
+	//info getdata;
+	folderid = getdata.get("id");
+	info folderid;
+	getatrs = getdata.get("attributes").get("permalink");
+	mapping = Map();
+	mapping.put("zohoworkdriveforcrm__Workdrive_Folder_ID",folderid);
+	mapping.put("zohoworkdriveforcrm__Workdrive_Folder_URL",getatrs);
+	updatecontacts = zoho.crm.updateRecord("Contacts",id,mapping);
+	info updatecontacts;
+	info getatrs;
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2.1/Contacts/" + getid + "/Attachments"
+		type :GET
+		connection:"crm_custom_function"
+	];
+	info response;
+	Attachments = response.get("data");
+	for each  attachment in Attachments
+	{
+		fileid = attachment.get("$file_id");
+		info fileid;
+		fileid = attachment.get("id");
+		info fileid;
+		filename = attachment.get("File_Name");
+		Download = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2.1/Contacts/" + getid + "/Attachments/" + fileid
+			type :GET
+			connection:"crm_connection"
+		];
+		info Download;
+		upload = zoho.workdrive.uploadFile(Download,folderid,filename,false,"workdrive");
+		info upload;
+	}
+}
+else
+{
+	gettingcontact = zoho.crm.getRecordById("Contacts",getid);
+	getfolderid = gettingcontact.get("zohoworkdriveforcrm__Workdrive_Folder_ID");
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2.1/Contacts/" + getid + "/Attachments"
+		type :GET
+		connection:"crm_custom_function"
+	];
+	info response;
+	Attachments = response.get("data");
+	for each  attachment in Attachments
+	{
+		fileid = attachment.get("$file_id");
+		info fileid;
+		fileid = attachment.get("id");
+		info fileid;
+		filename = attachment.get("File_Name");
+		Download = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2.1/Contacts/" + getid + "/Attachments/" + fileid
+			type :GET
+			connection:"crm_connection"
+		];
+		info Download;
+		upload = zoho.workdrive.uploadFile(Download,getfolderid,filename,false,"workdrive");
+		info upload;
+	}
+}
+/*
+Download = invokeurl
+[
+	url :"https://www.zohoapis.com/crm/v2.1/Contacts/" + getid + "/Attachments/" + fileid
+	type :GET
+	connection:"crm_connection"
+];
+info Download;
+upload = zoho.workdrive.uploadFile(Download,"gg21l72ad5310502844c5acc2bcc7e73a3b94",Download,false,"workdrive");
+info upload;
+getdata = upload.get("data");
+info getdata;
+for each  atr in getdata
+{
+	attribute = atr.get("attributes").get("Permalink");
+	info attribute;
+}
+mapping = Map();
+mapping.put("zohoworkdriveforcrm__Workdrive_Folder_URL",attribute);
+updatecontacts = zoho.crm.updateRecord("Contacts",id,mapping);
+info updatecontacts;
+*/
+return "Successfully Exported";
