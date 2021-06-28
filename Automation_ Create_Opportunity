@@ -1,0 +1,109 @@
+//getqu = zoho.crm.getRecordById("Quotes", id);
+//info getqu;
+//get contacts
+getcontacts = zoho.crm.getRecordById("Contacts",id);
+nama = getcontacts.get("Full_Name");
+//info nama;
+idc = getcontacts.get("id");
+sub = getcontacts.get("Subject");
+assesdate = getcontacts.get("Assesment_Date_Time");
+assesinitial = getcontacts.get("Assessor_s_Initial");
+Account_Name = getcontacts.get("Account_Name");
+Service_Name = getcontacts.get("Service_Name");
+quotedate = assesdate.toDate();
+//quotedate = zoho.currentdate;
+assessor = getcontacts.get("Assessor");
+prodetails = {{"product":{"Product_Code":"01","Currency":"AUD","name":"RSJ170","id":"2875736000025650076"},"quantity":0,"Discount":0,"total_after_discount":0,"net_total":0,"book":null,"Tax":null,"list_price":0,"unit_price":null,"quantity_in_stock":-24,"total":0,"id":"2875736000023992178","product_description":null,"line_tax":{}}};
+address = getcontacts.get("Address");
+assesoremail = getcontacts.get("Assesor_Email");
+region = getcontacts.get("Region");
+billingstreet = getcontacts.get("Street");
+billingcity = getcontacts.get("City");
+billingstate = getcontacts.get("State");
+jobcategory = getcontacts.get("Job_Category");
+jobtype = getcontacts.get("Job_Type");
+desc = getcontacts.get("Description");
+stage = getcontacts.get("Key_Contact_Stage");
+//assessor initial
+getcontacts = zoho.crm.getRecordById("Contacts",id.tolong());
+info getcontacts;
+assessor = getcontacts.get("Assessor");
+assessoremail = getcontacts.get("Assesor_Email");
+//condtion
+if(assessor = "Richard Evans" && assessoremail = "richard.evans@resinject.com.au")
+{
+	Assessor_s_Initial = "RE";
+}
+else if(assessor = "Andrew Evans" && assessoremail = "andrew.evans@resinject.com.au")
+{
+	Assessor_s_Initial = "AE";
+}
+else if(assessor = "David Pratt" && assessoremail = "david@resinject.com.au")
+{
+	Assessor_s_Initial = "DP";
+}
+else if(assessor = "Nathan Schumann" && assessoremail = "nathan.schumann@resinject.com.au")
+{
+	Assessor_s_Initial = "NS";
+}
+else if(assessor = "Phillip Harris" && assessoremail = "phill.harris@resinject.com.au")
+{
+	Assessor_s_Initial = "PH";
+}
+else if(assessor = "Adrian Randall" && assessoremail = "adrian.randall@resinject.com.au")
+{
+	Assessor_s_Initial = "AR";
+}
+else
+{
+	Assessor_s_Initial = null;
+}
+mapping = Map();
+mapping.put("Assessor_s_Initial",Assessor_s_Initial);
+updatecontacts = zoho.crm.updateRecord("Contacts",id,mapping);
+info updatecontacts;
+//mapping contact name
+mapname = Map();
+mapname.put("name",nama);
+mapname.put("id",idc);
+//============
+//mapping data
+mapping = Map();
+mapping.put("Subject",sub);
+mapping.put("Assessment_Date_Time",assesdate);
+mapping.put("Product_Details",prodetails);
+mapping.put("Contact_Name",mapname);
+mapping.put("Account_Name",Account_Name);
+mapping.put("Assessor",assessor);
+mapping.put("Quote_Status","Created");
+mapping.put("Site_Assessment_Organized",true);
+mapping.put("Opportunity_Status","Open");
+mapping.put("Billing_Street",billingstreet);
+mapping.put("Billing_City",billingcity);
+mapping.put("Billing_State",billingstate);
+mapping.put("Job_Category",jobcategory);
+mapping.put("Job_Type",jobtype);
+mapping.put("Job_Description",desc);
+mapping.put("Region",region);
+mapping.put("Quote_Stage",stage);
+mapping.put("Email_Assesor",assesoremail);
+mapping.put("Address",address);
+mapping.put("Assessment_Date",quotedate);
+mapping.put("Service",Service_Name);
+mapping.put("$line_tax",{{"percentage":10,"name":"GST on Expenses","id":2875736000023328001}});
+//mapping.put("Quote_Date",quotedate);
+mapping.put("Assessor_s_Initial",Assessor_s_Initial);
+mapping.put("Country","Australia");
+createquote = zoho.crm.createRecord("Quotes",mapping);
+info createquote;
+idquote = createquote.get("id");
+createtime = createquote.get("Created_Time");
+info createtime;
+stringdate = createtime.toString("MMM dd, yyyy");
+info stringdate;
+quodate = createtime.toDate();
+mapquo = Map();
+mapquo.put("Quote_Date",quodate);
+mapquo.put("Quote_Date1",stringdate);
+update = zoho.crm.updateRecord("Quotes",idquote,mapquo);
+info update;
