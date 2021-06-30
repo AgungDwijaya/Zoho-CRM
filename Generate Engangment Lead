@@ -1,0 +1,63 @@
+leadInfo = zoho.crm.getRecordById("Leads",leadId);
+resourceId = "2mej2e6d1aad4ceac4317a8e68322c39d1bba";
+leadFirstName = leadInfo.get("First_Name");
+leadLastName = leadInfo.get("Last_Name");
+getowner = leadInfo.get("Owner").get("name");
+info "pler" + getowner;
+// info leadInfo;
+// info userInfo;
+accountId = leadInfo.get("Associated_Company").get("id");
+accountInfo = zoho.crm.getRecordById("Accounts",accountId);
+// info accountInfo;
+contactId = leadInfo.get("Associated_Contact").get("id");
+contactInfo = zoho.crm.getRecordById("Contacts",contactId);
+contactNameFirst = contactInfo.get("First_Name");
+contactNameLast = contactInfo.get("Last_Name");
+contactTitle = contactInfo.get("Title");
+contactPhone = contactInfo.get("Phone");
+info "contact phone =" + contactPhone;
+info "contact Phone = " + contactPhone;
+contactEmail = contactInfo.get("Email");
+info "contact info = " + contactInfo;
+accountName = accountInfo.get("Account_Name");
+abn = accountInfo.get("ABN");
+accountAddress = "";
+street = accountInfo.get("Billing_Street");
+city = accountInfo.get("Billing_City");
+country = accountInfo.get("Billing_Country");
+state = accountInfo.get("Billing_State");
+code = accountInfo.get("Billing_Code");
+if(street != null || city != null || country != null || state != null)
+{
+	accountAddress = street + ", " + city + ", " + country + ", " + state + " " + code;
+}
+info "accountAddress = " + accountAddress;
+contactAddress = "";
+contactStreet = contactInfo.get("Mailing_Street");
+contactCity = contactInfo.get("Mailing_City");
+contactCountry = contactInfo.get("Mailing_Country");
+contactState = contactInfo.get("Mailing_State");
+if(contactStreet != null || contactCity != null || contactCountry != null || contactState != null)
+{
+	contactAddress = contactStreet + ", " + contactCity + ", " + contactCountry + ", " + contactState;
+}
+info "contactAddress = " + contactAddress;
+info "accountName = " + accountName;
+info "ABN = " + abn;
+mdata = {"data":{{"Account_Name.Billing_Street":accountAddress,"Account_Name.ABN":abn,"Account_Name":accountName,"Contact_Name.Title":contactTitle,"Contact_Name.Phone":contactPhone,"Contact_Name.Email":contactEmail,"Contact_Name.Mailing_Street":contactAddress,"Contact_Name.First_Name":contactNameFirst,"Owner":getowner,"Contact_Name.Last_Name":contactNameLast}}};
+info "mdata = " + mdata;
+data = Map();
+data.put("output_format","pdf");
+data.put("filename"," Engagement Agreement " + leadFirstName + leadLastName);
+data.put("merge_data",mdata);
+info data;
+mergedown = invokeurl
+[
+	url :"https://writer.zoho.com/writer/api/v1/documents/" + resourceId + "/merge/download"
+	type :POST
+	parameters:data
+	connection:"writer"
+];
+info mergedown;
+info zoho.crm.attachFile("Leads",leadId,mergedown);
+return " Mutual Confident Deed " + leadFirstName + leadLastName + " successfully generated";
